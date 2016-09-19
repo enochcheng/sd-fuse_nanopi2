@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # Copyright (C) Guangzhou FriendlyARM Computer Tech. Co., Ltd.
 # (http://www.friendlyarm.com)
@@ -20,8 +20,8 @@
 # Automatically re-run script under sudo if not root
 if [ $(id -u) -ne 0 ]; then
 	echo "Re-running script under sudo..."
-	sudo "$0" "$@"
-	exit
+#	sudo "$0" "$@"
+#	exit
 fi
 
 # ----------------------------------------------------------
@@ -137,16 +137,16 @@ BL3_BIN=${BOOT_DIR}/bootloader
 BL3_POSITION=65
 
 # umount all at first
-umount /dev/${DEV_NAME}* > /dev/null 2>&1
+sudo umount /dev/${DEV_NAME}* > /dev/null 2>&1
 
 echo "---------------------------------"
 echo "2ndboot fusing"
-dd if=${BL2_BIN} of=/dev/${DEV_NAME} bs=512 seek=${BL2_POSITION}
+sudo dd if=${BL2_BIN} of=/dev/${DEV_NAME} bs=512 seek=${BL2_POSITION}
 
 echo "---------------------------------"
 echo "bootloader fusing"
-dd if=${TBI_BIN} of=/dev/${DEV_NAME} bs=512 seek=${TBI_POSITION} count=1
-dd if=${BL3_BIN} of=/dev/${DEV_NAME} bs=512 seek=${BL3_POSITION}
+sudo dd if=${TBI_BIN} of=/dev/${DEV_NAME} bs=512 seek=${TBI_POSITION} count=1
+sudo dd if=${BL3_BIN} of=/dev/${DEV_NAME} bs=512 seek=${BL3_POSITION}
 
 #<Message Display>
 echo "---------------------------------"
@@ -158,7 +158,7 @@ echo ""
 
 true ${FW_SETENV:=./tools/${ARCH}fw_setenv}
 true ${SD_UPDATE:=./tools/${ARCH}sd_update}
-true ${SD_TUNEFS:=./tools/sd_tune2fs.sh}
+true ${SD_TUNEFS:=./tools/sudo_sd_tune2fs.sh}
 
 echo "---------------------------------"
 echo "${TARGET_OS^} filesystem fusing"
@@ -173,20 +173,20 @@ fi
 
 # set uboot env, like cmdline
 if [ -f ./${TARGET_OS}/env.conf ]; then
-	${FW_SETENV} /dev/${DEV_NAME} -s ./${TARGET_OS}/env.conf
+	sudo ${FW_SETENV} /dev/${DEV_NAME} -s ./${TARGET_OS}/env.conf
 else
-	${FW_SETENV} /dev/${DEV_NAME} -s ${BOOT_DIR}/${TARGET_OS}_env.conf
+	sudo ${FW_SETENV} /dev/${DEV_NAME} -s ${BOOT_DIR}/${TARGET_OS}_env.conf
 fi
 
 # write ext4 image
-${SD_UPDATE} -d /dev/${DEV_NAME} -p ${PARTMAP}
+sudo ${SD_UPDATE} -d /dev/${DEV_NAME} -p ${PARTMAP}
 if [ $? -ne 0 ]; then
 	echo "Error: filesystem fusing failed, Stop."
 	exit 1
 fi
 
 if [ -z ${ARCH} ]; then
-	partprobe /dev/${DEV_NAME} -s 2>/dev/null
+	sudo partprobe /dev/${DEV_NAME} -s 2>/dev/null
 fi
 if [ $? -ne 0 ]; then
 	echo "Warn: Re-read the partition table failed"

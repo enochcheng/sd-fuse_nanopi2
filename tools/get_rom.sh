@@ -21,24 +21,18 @@
 # base setup
 
 BASE_URL=http://112.124.9.243/dvdfiles
-OPT_URL=http://wiki.friendlyarm.com/download
-BOARD=S5P4418/images-for-eflasher
+OPT_URL=http://wiki.friendlyarm.com/NanoPi2/download
+BOARD=NanoPi2
 
 TARGET=${1,,}
 
 case ${TARGET} in
 android)
 	ROMFILE=android-lollipop-images.tgz;;
-kitkat)
-	ROMFILE=android-kitkat-images.tgz;;
-core-qte)
-	ROMFILE=core-qte-images.tgz;;
 debian)
 	ROMFILE=debian-jessie-images.tgz;;
-eflasher)
-	ROMFILE=emmc-flasher-images.tgz;;
 *)
-	echo "Usage: $0 <android|core-qte|debian>"
+	echo "Usage: $0 <android|debian>"
 	exit 1
 esac
 
